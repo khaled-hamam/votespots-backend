@@ -1,0 +1,10 @@
+version: '3.6'
+services:
+  api:
+    container_name: api
+    build: .
+    command: npm run start:dev
+    volumes:
+      - ./:/usr/src/app
+    ports:
+      - "3000:3000"
