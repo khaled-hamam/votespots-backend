@@ -4,6 +4,7 @@ import morgan from 'morgan';
 import cors from 'cors';
 import compression from 'compression';
 import helmet from 'helmet';
+import { errorHandler } from './utils/middleware/errorHandler';
 
 import controllers from './controllers';
 
@@ -14,6 +15,7 @@ export default class Server {
     this.app = express();
     this.config();
     this.startControllers();
+    this.registerErrorHandlers();
   }
 
   private config(): void {
@@ -48,5 +50,9 @@ export default class Server {
 
   private startControllers(): void {
     controllers.forEach(controller => controller.register(this.app));
+  }
+
+  private registerErrorHandlers(): void {
+    this.app.use(errorHandler);
   }
 }
