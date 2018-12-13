@@ -7,7 +7,7 @@ import { validateVoteInput } from '../utils/validation/vote';
 export default class VoteController implements IController {
   public register(app: Application): void {
     app.get('/api/vote/:id', this.findVote);
-    app.post('/api/vote', this.createVote);
+    app.post('/api/vote/', this.createVote);
     app.post('/api/vote/:id/:header', this.SubmitVote);
   }
 
@@ -26,35 +26,34 @@ export default class VoteController implements IController {
 
     res.json(reqVote);
   }
-  private createVote(req: Request, res: Response) {
+  private async createVote(req: Request, res: Response) {
     const { isValid, msg } = validateVoteInput(req.body);
+
     if (isValid === false) {
       throw new ApiError(msg, 400);
     }
     const vote = new Vote(req.body);
-    vote.save();
-    res.status(200).json(vote);
+    vote.results = new Array(vote.headers.length);
+    vote.results.forEach(element => {
+      element = 0;
+    });
+    const newVote = await vote.save();
+    res.status(201).json(newVote);
   }
   private async SubmitVote(req: Request, res: Response) {
-    //request fe  vote id we headers
     let vote;
     try {
       vote = await Vote.findById({ _id: req.params.id });
     } catch (error) {
       throw new ApiError('vote not found.', 404);
     }
-    let count = 0;
-    let isFound = false;
-    for (const i in vote.headers) {
-      if (req.params.header == i) {
-        vote.results[count]++;
-        isFound = true;
-        break;
-      }
-      count++;
-    }
-    if (!isFound) {
+
+    let headerIndex = vote.headers.indexOf(req.params.header);
+    if (headerIndex == -1) {
       throw new ApiError('header not found.', 404);
+    } else {
+      vote.results[headerIndex]++;
+      res.status(201).end();
     }
   }
 }
