@@ -8,7 +8,6 @@ export default class HomeController implements IController {
   }
 
   private ping(req: Request, res: Response) {
-    throw new ApiError('Test', 404);
     res.json('Hello World!');
   }
 }
