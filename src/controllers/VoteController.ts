@@ -74,10 +74,10 @@ export default class VoteController implements IController {
         .sort([['createdAt', -1]])
         .limit(10);
 
-      votes.map(vote => pick(vote, ['_id', 'name', 'headers', 'results']));
+      votes = votes.map(vote => pick(vote, ['_id', 'name', 'headers', 'results']));
+      res.json(votes);
     } catch (error) {
       throw new ApiError('No available votes', 404);
     }
-    res.status(201).json(votes);
   }
 }
