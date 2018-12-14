@@ -3,6 +3,7 @@ import { IController } from './IController';
 import { ApiError } from '../utils/ApiError';
 import { Vote } from '../models/Vote';
 import { validateVoteInput } from '../utils/validation/vote';
+import { pick } from 'lodash';
 
 export default class VoteController implements IController {
   public register(app: Application): void {
@@ -15,27 +16,19 @@ export default class VoteController implements IController {
   private async findVote(req: Request, res: Response) {
     let vote;
     try {
-      vote = await Vote.findById({ _id: req.params.id });
+      vote = await Vote.findById(req.params.id);
       const reqVote = {
+        _id: vote._id,
         name: vote.name,
-        header: vote.headers,
+        headers: vote.headers,
         results: vote.results
       };
-
       res.json(reqVote);
     } catch (error) {
       throw new ApiError('vote not found.', 404);
     }
-
-    const reqVote = {
-      vote: vote.id,
-      name: vote.name,
-      header: vote.headers,
-      results: vote.results
-    };
-
-    res.json(reqVote);
   }
+
   private async createVote(req: Request, res: Response) {
     const { isValid, msg } = validateVoteInput(req.body);
 
@@ -52,10 +45,11 @@ export default class VoteController implements IController {
     const newVote = await vote.save();
     res.status(201).json(newVote);
   }
+
   private async SubmitVote(req: Request, res: Response) {
     let vote;
     try {
-      vote = await Vote.findById({ _id: req.params.id });
+      vote = await Vote.findById(req.params.id);
       if (!vote) {
         throw new ApiError('vote not found.', 404);
       }
@@ -72,24 +66,18 @@ export default class VoteController implements IController {
       res.status(201).end();
     }
   }
+
   private async recentVotes(req: Request, res: Response) {
-    let reqVotes = new Array();
-    let vote = new Array();
+    let votes = [];
     try {
-      vote = await Vote.find({});
-      if (!vote) {
-        throw new ApiError('No available votes', 404);
-      }
+      votes = await Vote.find({})
+        .sort([['createdAt', -1]])
+        .limit(10);
+
+      votes.map(vote => pick(vote, ['_id', 'name', 'headers', 'results']));
     } catch (error) {
       throw new ApiError('No available votes', 404);
     }
-    for (let i = 0; i < Math.min(vote.length, 10); i++) {
-      reqVotes[i] = new Vote();
-      reqVotes[i].id = vote[i].id;
-      reqVotes[i].name = vote[i].name;
-      reqVotes[i].headers = vote[i].headers;
-      reqVotes[i].results = vote[i].results;
-    }
-    res.status(202).json(reqVotes);
+    res.status(201).json(votes);
   }
 }

@@ -21,7 +21,7 @@ export class UserController implements IController {
       throw new ApiError(msg, 400);
     }
 
-    const foundUser = User.find({ email: req.body.email });
+    const [foundUser] = await User.find({ email: req.body.email });
     if (foundUser) {
       throw new ApiError('User already registered.', 400);
     }
