@@ -9,6 +9,7 @@ export default class VoteController implements IController {
     app.get('/api/vote/:id', this.findVote);
     app.post('/api/vote/', this.createVote);
     app.post('/api/vote/:id/:header', this.SubmitVote);
+    app.get('/api/votes', this.recentVotes);
   }
 
   private async findVote(req: Request, res: Response) {
@@ -19,6 +20,7 @@ export default class VoteController implements IController {
       throw new ApiError('vote not found.', 404);
     }
     const reqVote = {
+      vote: vote.id,
       name: vote.name,
       header: vote.headers,
       results: vote.results
@@ -33,7 +35,7 @@ export default class VoteController implements IController {
       throw new ApiError(msg, 400);
     }
     const vote = new Vote(req.body);
-    vote.results = new Array(vote.headers.length);
+    vote.results = new Array();
     vote.results.forEach(element => {
       element = 0;
     });
@@ -55,5 +57,25 @@ export default class VoteController implements IController {
       vote.results[headerIndex]++;
       res.status(201).end();
     }
+  }
+  private async recentVotes(req: Request, res: Response) {
+    let reqVotes = new Array();
+    let vote = new Array();
+    try {
+      vote = await Vote.find({});
+      if (!vote) {
+        throw new ApiError('No available votes', 404);
+      }
+    } catch (error) {
+      throw new ApiError('No available votes', 404);
+    }
+    for (let i = 0; i < Math.min(vote.length, 10); i++) {
+      reqVotes[i] = new Vote();
+      reqVotes[i].id = vote[i].id;
+      reqVotes[i].name = vote[i].name;
+      reqVotes[i].headers = vote[i].headers;
+      reqVotes[i].results = vote[i].results;
+    }
+    res.status(202).json(reqVotes);
   }
 }
