@@ -8,6 +8,7 @@ import 'express-async-errors';
 
 import { errorHandler } from './utils/middleware/errorHandler';
 import controllers from './controllers';
+import { socketManager } from './utils/socketManager';
 
 export default class Server {
   public readonly app: express.Application;
@@ -33,7 +34,7 @@ export default class Server {
 
     this.app.use(
       cors({
-        origin: ['http://localhost:3001'],
+        origin: [process.env.CLIENT_URL, 'http://localhost:3001'],
         methods: ['GET', 'POST'],
         allowedHeaders: ['Content-Type', 'Authorization']
       })
@@ -47,6 +48,8 @@ export default class Server {
         Host: ${HOST}:${PORT}
       `);
     });
+
+    socketManager(this.app);
   }
 
   private startControllers(): void {
