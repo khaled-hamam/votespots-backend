@@ -4,7 +4,7 @@ import * as jwt from 'jsonwebtoken';
 
 import { ApiError } from './../utils/ApiError';
 import { IController } from './IController';
-import { validateRegisterInput } from '../utils/validation/Register';
+import { validateRegisterInput } from '../utils/validation/register';
 import { User } from '../models/User';
 import { validateLoginInput } from '../utils/validation/login';
 
