@@ -4,8 +4,11 @@ import morgan from 'morgan';
 import cors from 'cors';
 import compression from 'compression';
 import helmet from 'helmet';
+import 'express-async-errors';
 
+import { errorHandler } from './utils/middleware/errorHandler';
 import controllers from './controllers';
+import { socketManager } from './utils/socketManager';
 
 export default class Server {
   public readonly app: express.Application;
@@ -14,6 +17,7 @@ export default class Server {
     this.app = express();
     this.config();
     this.startControllers();
+    this.registerErrorHandlers();
   }
 
   private config(): void {
@@ -30,7 +34,7 @@ export default class Server {
 
     this.app.use(
       cors({
-        origin: ['http://localhost:3001'],
+        origin: [process.env.CLIENT_URL, 'http://localhost:3001'],
         methods: ['GET', 'POST'],
         allowedHeaders: ['Content-Type', 'Authorization']
       })
@@ -44,9 +48,15 @@ export default class Server {
         Host: ${HOST}:${PORT}
       `);
     });
+
+    socketManager(this.app);
   }
 
   private startControllers(): void {
     controllers.forEach(controller => controller.register(this.app));
+  }
+
+  private registerErrorHandlers(): void {
+    this.app.use(errorHandler);
   }
 }
