@@ -7,8 +7,8 @@ export function validateVoteInput(body) {
     isValid = false;
   }
 
-  if (!headers || headers.length === 0) {
-    msg = 'please enter at least one header';
+  if (!headers || headers.length < 2) {
+    msg = 'please enter at least 2  headers';
     isValid = false;
   }
   return { isValid, msg };
