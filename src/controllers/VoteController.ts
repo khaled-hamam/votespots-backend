@@ -30,13 +30,12 @@ export default class VoteController implements IController {
   }
 
   private async createVote(req: Request, res: Response) {
+    req.body.headers = req.body.headers.map(e => e.trim()).filter(e => e !== '');
     const { isValid, msg } = validateVoteInput(req.body);
-
     if (isValid === false) {
       throw new ApiError(msg, 400);
     }
     const vote = new Vote(req.body);
-
     vote.results = new Array();
     for (let i = 0; i < vote.headers.length; ++i) {
       vote.results[i] = 0;
@@ -73,7 +72,6 @@ export default class VoteController implements IController {
       votes = await Vote.find({})
         .sort([['createdAt', -1]])
         .limit(10);
-
       votes = votes.map(vote => pick(vote, ['_id', 'name', 'headers', 'results']));
       res.json(votes);
     } catch (error) {
