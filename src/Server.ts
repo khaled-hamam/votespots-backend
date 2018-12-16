@@ -5,6 +5,7 @@ import cors from 'cors';
 import compression from 'compression';
 import helmet from 'helmet';
 import 'express-async-errors';
+import http from 'http';
 
 import { errorHandler } from './utils/middleware/errorHandler';
 import controllers from './controllers';
@@ -12,6 +13,7 @@ import { socketManager } from './utils/socketManager';
 
 export default class Server {
   public readonly app: express.Application;
+  public server: http.Server;
 
   constructor() {
     this.app = express();
@@ -42,14 +44,14 @@ export default class Server {
 
     const PORT = process.env.PORT || 3000;
     const HOST = process.env.HOST || 'http://localhost';
-    this.app.listen(PORT, () => {
+    this.server = this.app.listen(PORT, () => {
       console.log(`
         Server is running on port: ${PORT}
         Host: ${HOST}:${PORT}
       `);
     });
 
-    socketManager(this.app);
+    socketManager(this.server);
   }
 
   private startControllers(): void {

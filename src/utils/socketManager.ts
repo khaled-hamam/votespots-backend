@@ -1,11 +1,8 @@
-import { Application } from 'express';
-import io from 'socket.io';
 import { Server } from 'http';
+import io from 'socket.io';
 
-export function socketManager(app: Application) {
-  const server = new Server(app);
+export function socketManager(server: Server) {
   const serverSocket = io(server);
-  server.listen(process.env.SOCKET_PORT || 4000);
 
   serverSocket.on('connection', socket => {
     let room;
