@@ -4,11 +4,12 @@ import { ApiError } from '../utils/ApiError';
 import { Vote } from '../models/Vote';
 import { validateVoteInput } from '../utils/validation/vote';
 import { pick } from 'lodash';
+import { authorize } from '../utils/middleware/authHandler';
 
 export default class VoteController implements IController {
   public register(app: Application): void {
     app.get('/api/vote/:id', this.findVote);
-    app.post('/api/vote/', this.createVote);
+    app.post('/api/vote/', authorize, this.createVote);
     app.post('/api/vote/:id/:header', this.SubmitVote);
     app.get('/api/votes', this.recentVotes);
   }
