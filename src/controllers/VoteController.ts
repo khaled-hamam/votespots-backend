@@ -30,6 +30,7 @@ export default class VoteController implements IController {
   }
 
   private async createVote(req: Request, res: Response) {
+    req.body.headers = req.body.headers.map(e => e.trim()).filter(e => e !== '');
     const { isValid, msg } = validateVoteInput(req.body);
 
     if (isValid === false) {
@@ -51,15 +52,15 @@ export default class VoteController implements IController {
     try {
       vote = await Vote.findById(req.params.id);
       if (!vote) {
-        throw new ApiError('vote not found.', 404);
+        throw new ApiError('vote not found.', 400);
       }
     } catch (error) {
-      throw new ApiError('vote not found.', 404);
+      throw new ApiError('vote not found.', 400);
     }
 
     const headerIndex = vote.headers.indexOf(req.params.header);
     if (headerIndex === -1) {
-      throw new ApiError('header not found.', 404);
+      throw new ApiError('header not found.', 400);
     } else {
       vote.results[headerIndex]++;
       await Vote.findByIdAndUpdate(vote._id, vote);
@@ -76,7 +77,7 @@ export default class VoteController implements IController {
 
       votes.map(vote => pick(vote, ['_id', 'name', 'headers', 'results']));
     } catch (error) {
-      throw new ApiError('No available votes', 404);
+      throw new ApiError('No available votes', 400);
     }
     res.status(201).json(votes);
   }
